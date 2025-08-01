@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { CustomerCard } from "./CustomerCard"
+import { MetricsBar } from "./MetricsBar"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, SortAsc, Filter } from "lucide-react"
 
@@ -15,7 +16,12 @@ const mockCustomers = [
     avatar: "AC",
     revenue: "$24,500/mo",
     contactName: "Sarah Johnson",
-    contactRole: "VP of Operations"
+    contactRole: "VP of Operations",
+    businessUnit: "SPM",
+    aiReasoning: {
+      healthStatus: "Strong engagement: 85% usage with +12% growth trend over 30 days",
+      recommendation: "Customer showing consistent growth. Perfect time to discuss enterprise features and expand their usage of advanced modules."
+    }
   },
   {
     id: "2", 
@@ -27,7 +33,12 @@ const mockCustomers = [
     avatar: "TS",
     revenue: "$12,200/mo",
     contactName: "Mike Chen",
-    contactRole: "CTO"
+    contactRole: "CTO",
+    businessUnit: "Risk BU",
+    aiReasoning: {
+      healthStatus: "Usage dropped 8% and no login for 5 days. Early warning signs detected",
+      recommendation: "Customer may be struggling with adoption. Recommend immediate outreach with training resources and a success manager check-in."
+    }
   },
   {
     id: "3",
@@ -39,7 +50,12 @@ const mockCustomers = [
     avatar: "GD",
     revenue: "$8,900/mo",
     contactName: "Elena Rodriguez",
-    contactRole: "Operations Manager"
+    contactRole: "Operations Manager",
+    businessUnit: "Risk BU",
+    aiReasoning: {
+      healthStatus: "Critical: 23% usage decline and 12 days without contact. High churn risk",
+      recommendation: "Immediate intervention required. Customer showing classic churn signals with steep usage decline and extended silence period."
+    }
   },
   {
     id: "4",
@@ -51,7 +67,12 @@ const mockCustomers = [
     avatar: "IL",
     revenue: "$18,600/mo",
     contactName: "David Park",
-    contactRole: "Head of Product"
+    contactRole: "Head of Product",
+    businessUnit: "HR",
+    aiReasoning: {
+      healthStatus: "Exceptional engagement: 96% usage with +34% growth, very active user",
+      recommendation: "Prime upsell candidate. High engagement and recent activity indicate readiness for advanced features and expanded usage."
+    }
   },
   {
     id: "5",
@@ -63,7 +84,12 @@ const mockCustomers = [
     avatar: "SV",
     revenue: "$5,400/mo",
     contactName: "Jessica Wu",
-    contactRole: "Founder"
+    contactRole: "Founder",
+    businessUnit: "Marketing",
+    aiReasoning: {
+      healthStatus: "Steady growth: 67% usage with modest +5% improvement, stable engagement",
+      recommendation: "Customer is on the right track. Share success stories and best practices to help them maximize value and grow further."
+    }
   },
   {
     id: "6",
@@ -75,16 +101,22 @@ const mockCustomers = [
     avatar: "EP",
     revenue: "$45,200/mo",
     contactName: "Robert Thompson",
-    contactRole: "Director of IT"
+    contactRole: "Director of IT",
+    businessUnit: "Finance",
+    aiReasoning: {
+      healthStatus: "Strong momentum: 88% usage with +18% growth and very recent activity",
+      recommendation: "Excellent expansion opportunity. High usage, positive trend, and recent engagement make this ideal timing for presenting premium offerings."
+    }
   }
 ]
 
 interface CustomerListProps {
   filters: string[]
   searchQuery: string
+  businessUnitFilters: string[]
 }
 
-export function CustomerList({ filters, searchQuery }: CustomerListProps) {
+export function CustomerList({ filters, searchQuery, businessUnitFilters }: CustomerListProps) {
   const [sortBy, setSortBy] = useState<"name" | "status" | "usage" | "revenue">("status")
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -93,8 +125,9 @@ export function CustomerList({ filters, searchQuery }: CustomerListProps) {
     const matchesSearch = searchQuery === "" || 
       customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       customer.contactName.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesBU = businessUnitFilters.length === 0 || businessUnitFilters.includes(customer.businessUnit)
     
-    return matchesFilter && matchesSearch
+    return matchesFilter && matchesSearch && matchesBU
   })
 
   const handleRefresh = async () => {
@@ -124,8 +157,22 @@ export function CustomerList({ filters, searchQuery }: CustomerListProps) {
     }
   })
 
+  // Calculate metrics
+  const metrics = {
+    totalAccounts: mockCustomers.length,
+    percentAtRisk: (mockCustomers.filter(c => c.status === 'at-risk').length / mockCustomers.length) * 100,
+    percentHealthy: (mockCustomers.filter(c => c.status === 'healthy').length / mockCustomers.length) * 100,
+    avgDaysSinceLastInteraction: mockCustomers.reduce((acc, customer) => {
+      const days = customer.lastInteraction.includes('hour') ? 0.1 : 
+                   customer.lastInteraction.includes('day') ? parseInt(customer.lastInteraction) : 0.1
+      return acc + days
+    }, 0) / mockCustomers.length
+  }
+
   return (
     <div className="space-y-6">
+      {/* Metrics Bar */}
+      <MetricsBar metrics={metrics} />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

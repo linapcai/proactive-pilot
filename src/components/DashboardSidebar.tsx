@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge"
 interface DashboardSidebarProps {
   selectedFilters: string[]
   onFiltersChange: (filters: string[]) => void
+  selectedBusinessUnits: string[]
+  onBusinessUnitsChange: (businessUnits: string[]) => void
 }
 
 const healthStatuses = [
@@ -56,7 +58,15 @@ const quickActions = [
   { icon: Target, label: "Opportunities", count: 34 },
 ]
 
-export function DashboardSidebar({ selectedFilters, onFiltersChange }: DashboardSidebarProps) {
+const businessUnits = [
+  { id: "Risk BU", label: "Risk BU", count: 45 },
+  { id: "SPM", label: "SPM", count: 67 },
+  { id: "HR", label: "HR", count: 34 },
+  { id: "Marketing", label: "Marketing", count: 28 },
+  { id: "Finance", label: "Finance", count: 47 }
+]
+
+export function DashboardSidebar({ selectedFilters, onFiltersChange, selectedBusinessUnits, onBusinessUnitsChange }: DashboardSidebarProps) {
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
 
@@ -65,6 +75,13 @@ export function DashboardSidebar({ selectedFilters, onFiltersChange }: Dashboard
       ? selectedFilters.filter(f => f !== filterId)
       : [...selectedFilters, filterId]
     onFiltersChange(newFilters)
+  }
+
+  const toggleBusinessUnit = (buId: string) => {
+    const newBUs = selectedBusinessUnits.includes(buId)
+      ? selectedBusinessUnits.filter(f => f !== buId)
+      : [...selectedBusinessUnits, buId]
+    onBusinessUnitsChange(newBUs)
   }
 
   return (
@@ -135,6 +152,49 @@ export function DashboardSidebar({ selectedFilters, onFiltersChange }: Dashboard
                           }`}
                         >
                           {status.count}
+                        </Badge>
+                      </>
+                    )}
+                  </Button>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Business Units Filter */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground">
+            {!isCollapsed && "Business Units"}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {businessUnits.map((bu) => (
+                <SidebarMenuItem key={bu.id}>
+                  <Button
+                    variant={selectedBusinessUnits.includes(bu.id) ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => toggleBusinessUnit(bu.id)}
+                    className={`w-full justify-start gap-3 group ${
+                      selectedBusinessUnits.includes(bu.id) 
+                        ? "bg-primary/10 text-primary border border-primary/20" 
+                        : "hover:bg-muted/50"
+                    }`}
+                  >
+                    {!isCollapsed && (
+                      <>
+                        <div className="flex-1 text-left">
+                          <div className="text-sm font-medium">{bu.label}</div>
+                        </div>
+                        <Badge 
+                          variant="secondary" 
+                          className={`text-xs ${
+                            selectedBusinessUnits.includes(bu.id) 
+                              ? "bg-primary/20 text-primary" 
+                              : ""
+                          }`}
+                        >
+                          {bu.count}
                         </Badge>
                       </>
                     )}

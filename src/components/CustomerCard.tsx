@@ -14,6 +14,12 @@ import {
   Calendar
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface Customer {
   id: string
@@ -26,6 +32,11 @@ interface Customer {
   revenue: string
   contactName: string
   contactRole: string
+  businessUnit: string
+  aiReasoning: {
+    healthStatus: string
+    recommendation: string
+  }
 }
 
 interface CustomerCardProps {
@@ -83,39 +94,50 @@ export function CustomerCard({ customer }: CustomerCardProps) {
   }
 
   return (
-    <Card className="p-6 hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary/20 bg-card/60 backdrop-blur-sm">
-      <div className="flex items-start gap-6">
-        
-        {/* Customer Avatar & Basic Info */}
-        <div className="flex items-center gap-4 min-w-0 flex-1">
-          <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-primary-foreground font-semibold text-lg shadow-md">
-            {customer.avatar}
-          </div>
+    <TooltipProvider>
+      <Card className="p-6 hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary/20 bg-card/60 backdrop-blur-sm">
+        <div className="flex items-start gap-6">
           
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-lg font-semibold text-foreground truncate">
-                {customer.name}
-              </h3>
-              <Badge 
-                className={`${statusInfo.bgClass} ${statusInfo.textClass} ${statusInfo.borderClass} border`}
-                variant="outline"
-              >
-                <span className="mr-1">{statusInfo.icon}</span>
-                {statusInfo.label}
-              </Badge>
+          {/* Customer Avatar & Basic Info */}
+          <div className="flex items-center gap-4 min-w-0 flex-1">
+            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-primary-foreground font-semibold text-lg shadow-md">
+              {customer.avatar}
             </div>
             
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <User className="h-3 w-3" />
-                <span>{customer.contactName} • {customer.contactRole}</span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-semibold text-foreground truncate">
+                  {customer.name}
+                </h3>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge 
+                      className={`${statusInfo.bgClass} ${statusInfo.textClass} ${statusInfo.borderClass} border cursor-help`}
+                      variant="outline"
+                    >
+                      <span className="mr-1">{statusInfo.icon}</span>
+                      {statusInfo.label}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-sm">{customer.aiReasoning.healthStatus}</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
-              <div className="flex items-center gap-1">
-                <DollarSign className="h-3 w-3" />
-                <span className="font-medium">{customer.revenue}</span>
+            
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <User className="h-3 w-3" />
+                  <span>{customer.contactName} • {customer.contactRole}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" />
+                  <span className="font-medium">{customer.revenue}</span>
+                </div>
+                <div className="flex items-center gap-1 text-xs">
+                  <span className="px-2 py-1 rounded-md bg-muted">{customer.businessUnit}</span>
+                </div>
               </div>
-            </div>
           </div>
         </div>
 
@@ -150,15 +172,22 @@ export function CustomerCard({ customer }: CustomerCardProps) {
           </div>
         </div>
 
-        {/* Recommended Action */}
-        <div className="flex-1 max-w-md">
-          <div className="mb-3">
-            <h4 className="text-sm font-medium text-foreground mb-2">AI Recommendation</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {customer.recommendedAction}
-            </p>
+          {/* Recommended Action */}
+          <div className="flex-1 max-w-md">
+            <div className="mb-3">
+              <h4 className="text-sm font-medium text-foreground mb-2">AI Recommendation</h4>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-sm text-muted-foreground leading-relaxed cursor-help">
+                    {customer.recommendedAction}
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm max-w-xs">{customer.aiReasoning.recommendation}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
-        </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
@@ -196,8 +225,9 @@ export function CustomerCard({ customer }: CustomerCardProps) {
           <Button variant="ghost" size="icon" className="h-8 w-8">
             <MoreHorizontal className="h-4 w-4" />
           </Button>
+          </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </TooltipProvider>
   )
 }
